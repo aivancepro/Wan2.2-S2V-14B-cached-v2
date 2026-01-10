@@ -1,0 +1,48 @@
+name: Dry Run Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free up disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Check available disk space
+        run: df -h
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build dry-run image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.dry-run
+          push: false
+          tags: wan2-s2v:dry-run
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Check final disk usage
+        run: |
+          df -h
+          docker images

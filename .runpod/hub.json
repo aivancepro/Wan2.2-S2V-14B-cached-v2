@@ -1,0 +1,13 @@
+{
+  "title": "Wan2.2-S2V-14B (Cached)",
+  "description": "Speech-to-Video generation using Wan2.2-S2V-14B with RunPod model caching for faster cold starts. Generates synchronized video from audio + reference image.",
+  "type": "serverless",
+  "category": "video",
+  "runtime": "gpu",
+  "containerDisk": 20,
+  "gpu": {
+    "model": "H100",
+    "count": 1
+  },
+  "cudaVersions": ["12.4", "12.1"]
+}
