@@ -81,6 +81,17 @@ def handler(job: dict) -> dict:
         video: Base64 encoded MP4 video
     """
     job_input = job.get("input")
+
+    # Health check - returns immediately without loading model
+    # Used by RunPod's testing phase during deployment
+    if job_input == "health_check" or (isinstance(job_input, dict) and job_input.get("health_check")):
+        return {
+            "status": "healthy",
+            "model_dir": MODEL_DIR,
+            "model_available": os.path.exists(MODEL_DIR),
+            "message": "Handler ready. Model will be loaded on first inference request."
+        }
+
     if not isinstance(job_input, dict):
         return {"error": "Invalid request: missing 'input' field"}
 
