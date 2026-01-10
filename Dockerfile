@@ -47,6 +47,19 @@ RUN pip install --no-cache-dir ${FLASH_ATTN_WHEEL}
 # Set Model field in endpoint config to: Wan-AI/Wan2.2-S2V-14B
 # Model will be cached at: /runpod-volume/huggingface-cache/hub/models--Wan-AI--Wan2.2-S2V-14B/
 
+# =============================================================================
+# VERIFY: All imports work (catch missing dependencies at build time)
+# =============================================================================
+RUN python -c "\
+import wan; \
+from wan import WanS2V; \
+from decord import VideoReader; \
+import runpod; \
+print('All imports OK')"
+
+# VERIFY: generate.py can be imported
+RUN python -c "import generate; print('generate.py imports OK')"
+
 # Copy handler
 COPY handler.py /app/handler.py
 
