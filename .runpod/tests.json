@@ -7,11 +7,8 @@
     }
   ],
   "config": {
-    "gpu_type": "NVIDIA H100 80GB HBM3",
-    "gpu_count": 1,
-    "cuda_version": [
-      "12.4",
-      "12.1"
-    ]
+    "gpuTypeId": "NVIDIA H100 80GB HBM3",
+    "gpuCount": 1,
+    "allowedCudaVersions": ["12.4", "12.1"]
   }
 }
