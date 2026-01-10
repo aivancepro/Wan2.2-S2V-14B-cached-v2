@@ -50,18 +50,18 @@ RUN pip install --no-cache-dir ${FLASH_ATTN_WHEEL}
 # =============================================================================
 # VERIFY: All imports work (catch missing dependencies at build time)
 # =============================================================================
+# Note: wan module calls torch.cuda.current_device() at import time (upstream bug)
+# so we can only verify non-CUDA imports during build
 RUN python -c "\
-import wan; \
-from wan import WanS2V; \
 from decord import VideoReader; \
 from einops import rearrange; \
 import librosa; \
 from safetensors import safe_open; \
 import runpod; \
-print('All imports OK')"
+print('Dependencies OK')"
 
-# VERIFY: generate.py can be imported
-RUN python -c "import generate; print('generate.py imports OK')"
+# Note: Cannot verify generate.py or wan imports during build (requires CUDA)
+# These will be verified at runtime when GPU is available
 
 # Copy handler
 COPY handler.py /app/handler.py
