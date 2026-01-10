@@ -35,7 +35,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir torch==2.4.1+cu121 torchvision==0.19.1+cu121 torchaudio==2.4.1+cu121 --index-url https://download.pytorch.org/whl/cu121 && \
     grep -v -E "^(torch|torchvision|torchaudio|flash_attn)" requirements.txt > requirements_fixed.txt && \
     pip install --no-cache-dir -r requirements_fixed.txt && \
-    pip install --no-cache-dir runpod huggingface_hub[cli] decord
+    pip install --no-cache-dir runpod huggingface_hub[cli] decord einops librosa safetensors
 
 # Install Flash Attention 2 (use pre-built wheel to avoid 2+ hour build time)
 # Wheel from: https://github.com/mjun0812/flash-attention-prebuild-wheels
@@ -54,6 +54,9 @@ RUN python -c "\
 import wan; \
 from wan import WanS2V; \
 from decord import VideoReader; \
+from einops import rearrange; \
+import librosa; \
+from safetensors import safe_open; \
 import runpod; \
 print('All imports OK')"
 
