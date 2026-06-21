@@ -40,14 +40,6 @@ MODEL_DIR = (
 )
 print(f"Using model directory: {MODEL_DIR}")
 
-# Download the model at worker startup if missing (image kept small — 40GB too big to bake).
-# Runs once per cold worker; container disk on the endpoint must be >= 60GB.
-if not os.path.isdir(MODEL_DIR) or not os.listdir(MODEL_DIR):
-    from huggingface_hub import snapshot_download
-    print(f"Model absent at {MODEL_DIR} — downloading {MODEL_NAME} (~40GB, first cold start)…", flush=True)
-    snapshot_download(MODEL_NAME, local_dir=MODEL_DIR)
-    print("Model download complete.", flush=True)
-
 DEFAULT_SIZE = os.environ.get("DEFAULT_SIZE", "832*480")  # width*height
 DEFAULT_STEPS = int(os.environ.get("DEFAULT_STEPS", "30"))
 OFFLOAD_MODEL = os.environ.get("OFFLOAD_MODEL", "True").lower() == "true"
@@ -109,6 +101,14 @@ def handler(job: dict) -> dict:
         return {"error": "Missing required field: image_base64"}
     if "audio_base64" not in job_input:
         return {"error": "Missing required field: audio_base64"}
+
+    # Lazy model download on first inference (image kept small; a module-load download of
+    # ~40GB blew RunPod's worker-ready window -> crash loop). Slow only on the first cold job.
+    if not os.path.isdir(MODEL_DIR) or not os.listdir(MODEL_DIR):
+        from huggingface_hub import snapshot_download
+        print(f"Model absent at {MODEL_DIR} — downloading {MODEL_NAME} (~40GB)…", flush=True)
+        snapshot_download(MODEL_NAME, local_dir=MODEL_DIR)
+        print("Model download complete.", flush=True)
 
     # Extract parameters
     image_b64 = job_input["image_base64"]
