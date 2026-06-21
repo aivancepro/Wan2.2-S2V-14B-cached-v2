@@ -43,9 +43,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 ARG FLASH_ATTN_WHEEL=https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.0.4/flash_attn-2.7.3%2Bcu121torch2.4-cp310-cp310-linux_x86_64.whl
 RUN pip install --no-cache-dir ${FLASH_ATTN_WHEEL}
 
-# NOTE: Model is NOT bundled - uses RunPod model caching instead
-# Set Model field in endpoint config to: Wan-AI/Wan2.2-S2V-14B
-# Model will be cached at: /runpod-volume/huggingface-cache/hub/models--Wan-AI--Wan2.2-S2V-14B/
+# Bake the Wan2.2-S2V-14B model INTO the image (self-contained).
+# RunPod's model-cache catalog does NOT have this model, so we download it at build
+# into MODEL_DIR (/models/Wan2.2-S2V-14B) — no "Model" field needed on the endpoint.
+RUN huggingface-cli download Wan-AI/Wan2.2-S2V-14B --local-dir /models/Wan2.2-S2V-14B --local-dir-use-symlinks False
 
 # =============================================================================
 # VERIFY: All imports work (catch missing dependencies at build time)
