@@ -43,9 +43,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 ARG FLASH_ATTN_WHEEL=https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.0.4/flash_attn-2.7.3%2Bcu121torch2.4-cp310-cp310-linux_x86_64.whl
 RUN pip install --no-cache-dir ${FLASH_ATTN_WHEEL}
 
-# Model is NOT baked (40GB would blow the image-export limit -> build fail).
-# Instead the handler downloads it to MODEL_DIR at worker startup (first cold start).
-# Container disk must be >= 60GB on the endpoint to hold it.
+# BAKE the model into the image (InfiniteTalk-style): model travels with the image,
+# no runtime download -> worker ready instantly -> no crash-loop, no network volume.
+RUN huggingface-cli download Wan-AI/Wan2.2-S2V-14B --local-dir /models/Wan2.2-S2V-14B
 
 # =============================================================================
 # VERIFY: All imports work (catch missing dependencies at build time)
