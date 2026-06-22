@@ -229,3 +229,5 @@ def handler(job: dict) -> dict:
 # reachable here (NOT in an else branch) or the worker exits immediately = crash-loop.
 if __name__ == "__main__":
     runpod.serverless.start({"handler": handler})
+
+# rebuild trigger: retry after transient RunPod registry I/O error on the previous push
