@@ -165,19 +165,19 @@ def handler(job: dict) -> dict:
             "--ckpt_dir", MODEL_DIR,
             "--image", str(image_path),
             "--audio", str(audio_path),
-            "--output_dir", str(temp_path),
+            "--save_file", str(output_path),
             "--sample_steps", str(steps),
-            "--cfg_scale", str(cfg),
+            "--sample_guide_scale", str(cfg),
         ]
 
         if prompt:
             cmd.extend(["--prompt", prompt])
 
-        if negative_prompt:
-            cmd.extend(["--negative_prompt", negative_prompt])
+        # NB: Wan2.2 generate.py n'accepte PAS --negative_prompt (negative prompt
+        # par défaut codé en dur dans le modèle) — ne pas le passer.
 
         if seed >= 0:
-            cmd.extend(["--seed", str(seed)])
+            cmd.extend(["--base_seed", str(seed)])
 
         if OFFLOAD_MODEL:
             cmd.extend(["--offload_model", "True"])
@@ -214,7 +214,7 @@ def handler(job: dict) -> dict:
                 "stderr": result.stderr
             }
 
-        output_video = output_files[0]
+        output_video = output_path if output_path.exists() else output_files[0]
 
         # Encode output video
         try:
