@@ -225,16 +225,7 @@ def handler(job: dict) -> dict:
         return {"video": video_b64}
 
 
-# For local testing
+# The Dockerfile CMD runs this script as __main__, so serverless.start() MUST be
+# reachable here (NOT in an else branch) or the worker exits immediately = crash-loop.
 if __name__ == "__main__":
-    # Test with sample input
-    test_job = {
-        "input": {
-            "image_base64": "...",  # Add test image
-            "audio_base64": "...",  # Add test audio
-            "prompt": "a person talking",
-        }
-    }
-    print(handler(test_job))
-else:
     runpod.serverless.start({"handler": handler})
