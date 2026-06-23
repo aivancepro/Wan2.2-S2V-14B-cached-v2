@@ -1,9 +1,9 @@
-# Dockerfile for Wan2.2-S2V-14B on RunPod Serverless (CACHED VERSION)
-# Uses RunPod model caching - no model bundled in image
-# Requires 80GB+ VRAM (H100, A100-80GB)
-#
-# IMPORTANT: Set Model field in RunPod endpoint config to: Wan-AI/Wan2.2-S2V-14B
-# This enables automatic model caching for faster cold starts
+# Dockerfile for Wan2.2-S2V-14B on RunPod Serverless (NETWORK VOLUME VERSION)
+# Model is NOT bundled in the image. It lives on a RunPod network volume mounted
+# at /runpod-volume. The handler lazily downloads the model to MODEL_DIR on the
+# first cold job (~40GB), which persists on the volume -> all later cold starts
+# find it there (no re-download, small image that pushes reliably).
+# Requires 80GB+ VRAM (H100, A100-80GB) + a network volume attached to the endpoint.
 
 FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-devel
 
@@ -43,9 +43,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 ARG FLASH_ATTN_WHEEL=https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.0.4/flash_attn-2.7.3%2Bcu121torch2.4-cp310-cp310-linux_x86_64.whl
 RUN pip install --no-cache-dir ${FLASH_ATTN_WHEEL}
 
-# BAKE the model into the image (InfiniteTalk-style): model travels with the image,
-# no runtime download -> worker ready instantly -> no crash-loop, no network volume.
-RUN huggingface-cli download Wan-AI/Wan2.2-S2V-14B --local-dir /models/Wan2.2-S2V-14B
+# NO model bake here: the model is downloaded lazily by handler.py to the network
+# volume (MODEL_DIR) on the first job, and persists across cold starts. This keeps
+# the image small (~12GB deps only) so the registry push is reliable.
 
 # =============================================================================
 # VERIFY: All imports work (catch missing dependencies at build time)
@@ -66,12 +66,13 @@ print('Dependencies OK')"
 # Copy handler
 COPY handler.py /app/handler.py
 
-# Set environment variables
-ENV MODEL_DIR=/models/Wan2.2-S2V-14B
+# Set environment variables — MODEL_DIR points at the network volume (serverless
+# mounts the volume at /runpod-volume). hf cache also on the volume.
+ENV MODEL_DIR=/runpod-volume/Wan2.2-S2V-14B
 ENV DEFAULT_SIZE=832*480
 ENV DEFAULT_STEPS=30
 ENV OFFLOAD_MODEL=True
-ENV HF_HOME=/models/hf_cache
+ENV HF_HOME=/runpod-volume/hf_cache
 
 # Expose port (optional, for health checks)
 EXPOSE 8000
