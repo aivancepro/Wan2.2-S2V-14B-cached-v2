@@ -71,7 +71,7 @@ COPY handler.py /app/handler.py
 ENV MODEL_DIR=/runpod-volume/Wan2.2-S2V-14B
 ENV DEFAULT_SIZE=832*480
 ENV DEFAULT_STEPS=30
-ENV OFFLOAD_MODEL=True
+ENV OFFLOAD_MODEL=False
 ENV HF_HOME=/runpod-volume/hf_cache
 
 # Expose port (optional, for health checks)
