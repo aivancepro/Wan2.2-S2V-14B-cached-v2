@@ -191,7 +191,7 @@ def handler(job: dict) -> dict:
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=600,  # 10 minute timeout
+                timeout=1800,  # 30 min (offload off on 80GB = faster; generous safety, < endpoint exec timeout 2400)
                 cwd="/app"  # Assuming model code is in /app
             )
 
